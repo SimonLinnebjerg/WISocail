@@ -11,7 +11,10 @@ class FileHandler:
         count = 0
         for f in fileData:
             if "user" in f:
-                personList.append(Person(f.split(" ")[1]))
+                namevar = f.split(" ")[1]
+                if "\n" in namevar:
+                    namevar = namevar.replace("\n", "")
+                personList.append(Person(namevar))
             if "friend" in f:
                 varList = f.split("\t")[1:]
                 for i in varList:
