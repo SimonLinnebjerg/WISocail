@@ -1,9 +1,41 @@
 from FileHandler import FileHandler
+import tensorflow as TF
+from tensorflow import keras
 import numpy as NM
 file_object = open("C:/Users/Simon/Desktop/friendshipstest.txt", "r")
+test_object = open("C:/Users/Simon/Desktop/sentimenttrainingsmall.txt", "r")
+filefyr = FileHandler()
+testfyr = filefyr.read_test_or_training(test_object)
+listOfPersons = filefyr.readPersons(file_object)
 
-filefyr = FileHandler(file_object)
-listOfPersons = filefyr.readPersons()
+
+
+def negate(list):
+    negatelist = ["never","no","nothing","nowhere","not","havent","hasnt","hadnt","cant","couldnt","shouldnt","wont","wouldnt","dont","dosnt","didnt","isnt","arent","aint"]
+    stoplist = [".", ":", ";", "!", "?"]
+    negatebool = False
+    resultList = []
+    for i in list:
+        word = i
+        if i in negatelist:
+            negatebool = not negatebool
+            resultList.append(i)
+            continue
+        if i in stoplist:
+            negatebool = False
+        if negatebool:
+            word = i + "_NEG"
+        resultList.append(word)
+    return resultList
+
+for  i in testfyr:
+    i.review = negate(i.review)
+    i.summary = negate(i.summary)
+
+for i in listOfPersons:
+    i.review = negate(i.review)
+    i.summary = negate(i.summary)
+
 
 Laplacian = [0] * listOfPersons.__len__()
 
@@ -43,24 +75,38 @@ for i in eigenvalue[1:]:
 loweigenvalue = eigenvalue[idx]
 loweigenvector = eigenvector[idx]
 
-
-
-
-print loweigenvalue
-print loweigenvector
-
 count = 0
 for i in loweigenvector:
     listOfPersons[count].eigenvectorvalue = i
-
-#sortedpersonlist = sorted(listOfPersons, key=)
+    count += 1
 
 listOfPersons.sort(key=lambda x: x.eigenvectorvalue)
 
-print listOfPersons[0].eigenvectorvalue
-print listOfPersons[1].eigenvectorvalue
+largestGap = 0
+gapstart = 0
+count = 0
+for i in listOfPersons:
+    if count + 1 == listOfPersons.__len__():
+        break
+    x = abs(listOfPersons[count + 1].eigenvectorvalue - listOfPersons[count].eigenvectorvalue)
+    if largestGap < x:
+        largestGap = x
+        gapstart = count
 
 
+community1 = listOfPersons[0:gapstart+1]
+community2 = listOfPersons[gapstart+1:]
 
+allthewords = {}
+idx = 0
+for i in testfyr:
+    for j in i.summary:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
+    for j in i.review:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
 
-
+print("hey")

@@ -1,15 +1,17 @@
 
 class Person:
-    def __init__(self, name, friends, summary, review):
+    def __init__(self, name):
         if "\n" in name:
             self.name = name.replace("\n", "")
         else:
             self.name = name
-        self.friends = friends
-        self.summary = summary
-        self.review = review
+        self.friends = []
+        self.summary = []
+        self.review = []
         self.eigenvectorvalue = 0
 
-    def __init__(self, name):
-        self.name = name
-        self.friends = []
+class Testreview:
+    def __init__(self, summary, review, score):
+        self.summary = summary
+        self.review = review
+        self.score = score
