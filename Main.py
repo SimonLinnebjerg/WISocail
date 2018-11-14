@@ -2,13 +2,18 @@ from FileHandler import FileHandler
 import tensorflow as TF
 from tensorflow import keras
 import numpy as NM
-file_object = open("C:/Users/Simon/Desktop/friendshipstest.txt", "r")
-test_object = open("C:/Users/Simon/Desktop/sentimenttrainingsmall.txt", "r")
+file_object = open("C:/Users/marku/Desktop/friendships.reviews.txt", "r")
+train_object = open("C:/Users/marku/Desktop/sentimenttrainingdata.txt", "r")
+test_object = open("C:/Users/marku/Desktop/sentimenttestingdata.txt", "r")
+
+#file_object = open("C:/Users/marku/Desktop/friendshipstest.txt", "r")
+#train_object = open("C:/Users/marku/Desktop/sentimenttrainingsmall.txt", "r")
+#test_object = open("C:/Users/marku/Desktop/sentimenttestingsmall.txt", "r")
+
 filefyr = FileHandler()
-testfyr = filefyr.read_test_or_training(test_object)
+training_person_list = filefyr.read_test_or_training(train_object)
+test_person_list = filefyr.read_test_or_training(test_object)
 listOfPersons = filefyr.readPersons(file_object)
-
-
 
 def negate(list):
     negatelist = ["never","no","nothing","nowhere","not","havent","hasnt","hadnt","cant","couldnt","shouldnt","wont","wouldnt","dont","dosnt","didnt","isnt","arent","aint"]
@@ -28,7 +33,7 @@ def negate(list):
         resultList.append(word)
     return resultList
 
-for  i in testfyr:
+for  i in training_person_list:
     i.review = negate(i.review)
     i.summary = negate(i.summary)
 
@@ -36,7 +41,11 @@ for i in listOfPersons:
     i.review = negate(i.review)
     i.summary = negate(i.summary)
 
+for i in test_person_list:
+    i.review = negate(i.review)
+    i.summary = negate(i.summary)
 
+'''
 Laplacian = [0] * listOfPersons.__len__()
 
 count1 = 0
@@ -64,7 +73,6 @@ eigenvector = eigenvector[:, index]
 low = 0
 idx = 1
 count = 0
-
 
 for i in eigenvalue[1:]:
     if i == 0:
@@ -96,10 +104,16 @@ for i in listOfPersons:
 
 community1 = listOfPersons[0:gapstart+1]
 community2 = listOfPersons[gapstart+1:]
+'''
 
 allthewords = {}
-idx = 0
-for i in testfyr:
+
+allthewords["<PAD>"] = 0
+allthewords["<START>"] = 1
+allthewords["<UNK>"] = 2  # unknown
+allthewords["<UNUSED>"] = 3
+idx = 4
+for i in training_person_list:
     for j in i.summary:
         if j not in allthewords:
             allthewords[j] = idx
@@ -109,4 +123,91 @@ for i in testfyr:
             allthewords[j] = idx
             idx += 1
 
-print("hey")
+for i in test_person_list:
+    for j in i.summary:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
+    for j in i.review:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
+
+for i in listOfPersons:
+    for j in i.summary:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
+    for j in i.review:
+        if j not in allthewords:
+            allthewords[j] = idx
+            idx += 1
+
+train_data = []
+test_data = []
+markus= []
+
+for i in training_person_list:
+    temp_list = []
+    for j in i.summary:
+        temp_list.append(allthewords[j])
+    for j in i.review:
+        temp_list.append(allthewords[j])
+    train_data.append(temp_list)
+
+for i in test_person_list:
+    temp_list = []
+    for j in i.summary:
+        temp_list.append(allthewords[j])
+    for j in i.review:
+        temp_list.append(allthewords[j])
+    test_data.append(temp_list)
+
+for i in listOfPersons:
+    temp_list = []
+    for j in i.summary:
+        temp_list.append(allthewords[j])
+    for j in i.review:
+        temp_list.append(allthewords[j])
+    markus.append(temp_list)
+
+train_labels = []
+for i in training_person_list:
+    train_labels.append(i.score)
+
+test_labels = []
+for i in test_person_list:
+    test_labels.append(i.score)
+
+train_data = keras.preprocessing.sequence.pad_sequences(train_data,
+                                                        value= allthewords["<PAD>"],
+                                                        padding='post',
+                                                        maxlen=235)
+
+test_data = keras.preprocessing.sequence.pad_sequences(test_data,
+                                                       value=allthewords["<PAD>"],
+                                                       padding='post',
+                                                       maxlen=235)
+vocab_size = len(allthewords)
+
+model = keras.Sequential()
+model.add(keras.layers.Embedding(vocab_size, 16))
+model.add(keras.layers.GlobalAveragePooling1D())
+model.add(keras.layers.Dense(16, activation=TF.nn.relu))
+model.add(keras.layers.Dense(1, activation=TF.nn.softmax))
+
+model.compile(optimizer=TF.train.AdamOptimizer(),
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+
+history = model.fit(train_data,
+                    train_labels,
+                    epochs=5,
+                    batch_size=512,
+                 #   validation_data=(test_data, test_labels),
+                    verbose=1)
+
+results = model.evaluate(test_data, test_labels)
+
+print(results)

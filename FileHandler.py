@@ -47,20 +47,20 @@ class FileHandler:
         fileData = personfile.readlines()
         count = 0
         for f in fileData:
-            if "user" in f:
+            if "user:" in f:
                 self.remove_value_from_list(f, '\n')
                 namevar = f.split(" ")[1]
                 if "\n" in namevar:
                     namevar = namevar.split("\n")[0]
                 personList.append(Person(namevar))
-            if "friends" in f:
+            if "friends:" in f:
                 varList = f.split("\t")[1:]
                 for i in varList:
                     if "\n" in i:
                         varList[len(varList) -1] = i.replace("\n", "")
                 varList = self.remove_value_from_list(varList, '')
                 personList[count].friends.extend(varList)
-            if "summary" in f:
+            if "summary:" in f:
                 varSumm = self.stringCleaner(f)
                 varSumm = varSumm.split(" ")[2:]
                 if "*" not in f:
@@ -69,7 +69,7 @@ class FileHandler:
                             varSumm[len(varSumm) -1] = i.replace("\n", "")
                     varSumm = self.remove_value_from_list(varSumm, '')
                     personList[count].summary.extend(varSumm)
-            if "review" in f:
+            if "review:" in f:
                 varReview = self.stringCleaner(f)
                 varReview = varReview.split(" ")[2:]
                 if "*" not in f:
@@ -78,7 +78,7 @@ class FileHandler:
                             varReview[len(varReview) -1] = i.replace("\n", "")
                     varReview = self.remove_value_from_list(varReview, '')
                     personList[count].review.extend(varReview)
-                count +=1
+                count += 1
         return personList
 
     def stringCleaner(self, input):
