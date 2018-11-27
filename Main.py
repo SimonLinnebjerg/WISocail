@@ -1,8 +1,7 @@
 from FileHandler import FileHandler
-import tensorflow as TF
 from tensorflow import keras
-import os
 import numpy as NM
+import Person
 file_object = open("C:/Users/marku/Desktop/friendships.reviews.txt", "r")
 train_object = open("C:/Users/marku/Desktop/sentimenttrainingdata.txt", "r")
 test_object = open("C:/Users/marku/Desktop/sentimenttestingdata.txt", "r")
@@ -46,7 +45,7 @@ for i in test_person_list:
     i.review = negate(i.review)
     i.summary = negate(i.summary)
 
-'''
+
 Laplacian = [0] * listOfPersons.__len__()
 
 count1 = 0
@@ -105,7 +104,7 @@ for i in listOfPersons:
 
 community1 = listOfPersons[0:gapstart+1]
 community2 = listOfPersons[gapstart+1:]
-'''
+
 
 allthewords = {}
 
@@ -143,7 +142,7 @@ for i in listOfPersons:
         if j not in allthewords:
             allthewords[j] = idx
             idx += 1
-
+'''
 train_data = []
 test_data = []
 markus= []
@@ -189,8 +188,9 @@ test_data = NM.array(keras.preprocessing.sequence.pad_sequences(test_data,
                                                        value=allthewords["<PAD>"],
                                                        padding='post',
                                                        maxlen=235))
+'''
 vocab_size = len(allthewords)
-
+'''
 def train_model():
     model = keras.Sequential()
 #    model.add(keras.layers.Embedding(vocab_size, 16))
@@ -217,8 +217,7 @@ def train_model():
 
     model.save("sentimentModel.h5")
 
-
-
+'''
 
 def load_model():
     return keras.models.load_model("sentimentModel.h5")
@@ -226,31 +225,61 @@ def load_model():
 
 
 
-train_model()
+#train_model()
 model=load_model()
 
-print(model.predict(train_data[0]))
+#print(model.predict(train_data[0]))
 
-#def give_reviewers_scores(all_persons):
-#    for i in all_persons:
-#        if len(i.review) != 0:
-#            i.score = RUNNEURALNETWORK()
-#
-#def get_community(person):
-#    if person in community1:
-#        return community1
-#    else:
-#        return community2
-#
-#def person_likes_fine_food(person: Person):
-#    score = 0
-#    for i in person.friends:
-#        for j in listOfPersons:
-#            if i == j.name:
-#                if j.name == "kyle":
-#                    score += j.score * 10
-#                elif i in get_community(person):
-#                    score += j.score
-#                else:
-#                    score += j.score * 10
-#    return score / len(person.friends)
+def to_nn_input_format(person):
+    temp_list = []
+    for j in person.summary:
+        temp_list.append(allthewords[j])
+    for j in person.review:
+        temp_list.append(allthewords[j])
+    while len(temp_list) < 235:
+        temp_list.append("<PAD>")
+    return temp_list
+
+
+def give_reviewers_scores(all_persons):
+    for i in all_persons:
+        if len(i.review) != 0:
+            i.score = model.predict(to_nn_input_format(i))
+
+
+def get_community(person):
+    if person in community1:
+        return community1
+    else:
+        return community2
+
+
+def person_likes_fine_food(person: Person):
+    score = 0
+    for i in person.friends:
+        for j in listOfPersons:
+            if i == j.name:
+                if i in get_community(person):
+                    if j.name == "kyle":
+                        score += j.score * 10
+                    else:
+                        score += j.score
+                else:
+                    if j.name == "kyle":
+                        score += j.score * 100
+                    else:
+                        score += j.score * 10
+    return score / len(person.friends)
+
+
+def who_are_likely():
+    resultlist = []
+    for i in listOfPersons:
+        if len(i.summary) == 0:
+            i.score = person_likes_fine_food(i)
+            resultlist.append(str(i.name) + " " + str(i.score) + "\n")
+    return resultlist
+
+
+result = who_are_likely()
+print(result)

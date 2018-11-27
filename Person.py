@@ -10,6 +10,7 @@ class Person:
         self.review = []
         self.eigenvectorvalue = 0
 
+
 class Testreview:
     def __init__(self, summary, review, score):
         self.summary = summary
