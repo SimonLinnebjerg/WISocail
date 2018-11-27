@@ -1,6 +1,7 @@
 from FileHandler import FileHandler
 import tensorflow as TF
 from tensorflow import keras
+import os
 import numpy as NM
 file_object = open("C:/Users/marku/Desktop/friendships.reviews.txt", "r")
 train_object = open("C:/Users/marku/Desktop/sentimenttrainingdata.txt", "r")
@@ -179,35 +180,77 @@ test_labels = []
 for i in test_person_list:
     test_labels.append(i.score)
 
-train_data = keras.preprocessing.sequence.pad_sequences(train_data,
+train_data = NM.array(keras.preprocessing.sequence.pad_sequences(train_data,
                                                         value= allthewords["<PAD>"],
                                                         padding='post',
-                                                        maxlen=235)
+                                                        maxlen=235))
 
-test_data = keras.preprocessing.sequence.pad_sequences(test_data,
+test_data = NM.array(keras.preprocessing.sequence.pad_sequences(test_data,
                                                        value=allthewords["<PAD>"],
                                                        padding='post',
-                                                       maxlen=235)
+                                                       maxlen=235))
 vocab_size = len(allthewords)
 
-model = keras.Sequential()
-model.add(keras.layers.Embedding(vocab_size, 16))
-model.add(keras.layers.GlobalAveragePooling1D())
-model.add(keras.layers.Dense(16, activation=TF.nn.relu))
-model.add(keras.layers.Dense(1, activation=TF.nn.softmax))
-
-model.compile(optimizer=TF.train.AdamOptimizer(),
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+def train_model():
+    model = keras.Sequential()
+#    model.add(keras.layers.Embedding(vocab_size, 16))
+#    model.add(keras.layers.GlobalAveragePooling1D())
+#    model.add(keras.layers.Dense(16, activation=TF.nn.relu))
+#    model.add(keras.layers.Dense(1, activation=TF.nn.sigmoid))
 
 
-history = model.fit(train_data,
-                    train_labels,
-                    epochs=5,
-                    batch_size=512,
-                 #   validation_data=(test_data, test_labels),
-                    verbose=1)
+    model.add(keras.layers.Dense(16, input_shape=(235)))
+    model.add(keras.layers.Dense(30, activaction=TF.nn.relu))
+    model.add(keras.layers.Dense(1, activation=TF.nn.softmax))
 
-results = model.evaluate(test_data, test_labels)
+    model.compile(optimizer=TF.train.AdamOptimizer(),
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
 
-print(results)
+
+    model.fit(train_data,
+        train_labels,
+        epochs=1,
+        batch_size=512,
+     #   validation_data=(test_data, test_labels),
+        verbose=1)
+
+    model.save("sentimentModel.h5")
+
+
+
+
+def load_model():
+    return keras.models.load_model("sentimentModel.h5")
+
+
+
+
+train_model()
+model=load_model()
+
+print(model.predict(train_data[0]))
+
+#def give_reviewers_scores(all_persons):
+#    for i in all_persons:
+#        if len(i.review) != 0:
+#            i.score = RUNNEURALNETWORK()
+#
+#def get_community(person):
+#    if person in community1:
+#        return community1
+#    else:
+#        return community2
+#
+#def person_likes_fine_food(person: Person):
+#    score = 0
+#    for i in person.friends:
+#        for j in listOfPersons:
+#            if i == j.name:
+#                if j.name == "kyle":
+#                    score += j.score * 10
+#                elif i in get_community(person):
+#                    score += j.score
+#                else:
+#                    score += j.score * 10
+#    return score / len(person.friends)
