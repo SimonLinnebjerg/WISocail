@@ -55,6 +55,7 @@ def person_likes_fine_food(person: Person):
                             counter += 10
                         else:
                             score += j.score
+                            counter += 1
                     else:
                         if j.name == "kyle":
                             score += j.score * 100
@@ -62,7 +63,7 @@ def person_likes_fine_food(person: Person):
                         else:
                             score += j.score * 10
                             counter += 10
-    return score / (len(person.friends) + counter)
+    return score / counter
 
 
 def who_are_likely():
@@ -102,7 +103,7 @@ def give_reviewers_scores(all_persons):
         if len(i.review) != 0:
             tempresult = model.predict(featureList[u:k])
             max = np.argmax(tempresult)
-            i.score = tempresult                     #np.argmax(model.predict(featureList[u:k])) + 1
+            i.score = max + 1 #np.where(tempresult == max)+1       #np.argmax(model.predict(featureList[u:k])) + 1
             u += 1
             k += 1
 

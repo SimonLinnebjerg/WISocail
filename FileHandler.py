@@ -63,7 +63,7 @@ class FileHandler:
             if "summary:" in f:
                 varSumm = self.stringCleaner(f)
                 varSumm = varSumm.split(" ")[2:]
-                if "*" not in f:
+                if "summary: *" not in f:
                     for i in varSumm:
                         if "\n" in i:
                             varSumm[len(varSumm) -1] = i.replace("\n", "")
@@ -72,7 +72,7 @@ class FileHandler:
             if "review:" in f:
                 varReview = self.stringCleaner(f)
                 varReview = varReview.split(" ")[2:]
-                if "*" not in f:
+                if "review: *" not in f:
                     for i in varReview:
                         if "\n" in i:
                             varReview[len(varReview) -1] = i.replace("\n", "")
