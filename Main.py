@@ -40,6 +40,13 @@ def get_community(person):
         return community2
 
 
+def get_communityID(person):
+    if person in community1:
+        return 1
+    else:
+        return 2
+
+
 def person_likes_fine_food(person: Person):
     score = 0
     counter = 0
@@ -72,9 +79,9 @@ def who_are_likely():
         if len(i.summary) == 0:
             i.score = person_likes_fine_food(i)
             if (i.score > 3):
-                resultlist.append(str(i.name) + " " + str(i.score) + " - Will buy: Yes" + "\n")
+                resultlist.append("User: " + str(i.name) + " - Community:" + str(get_communityID(i)) + " - Score" + str(i.score) + " - Will buy: Yes")
             else:
-                resultlist.append(str(i.name) + " " + str(i.score) + " - Will buy: No" + "\n")
+                resultlist.append("User: " + str(i.name) + " - Community:" + str(get_communityID(i)) + " - Score" + str(i.score) + " - Will buy: No")
     return resultlist
 
 
@@ -97,7 +104,6 @@ def give_reviewers_scores(all_persons):
             featureList.append(temp)
 
     featureList = keras.preprocessing.sequence.pad_sequences(featureList, value=allthewords["<PAD>"], padding='post', maxlen=256)
-    print(featureList)
 
     for i in all_persons:
         if len(i.review) != 0:
@@ -120,5 +126,6 @@ predicted_scores = np.argmax(model.predict(temppersons))   #random.randint(1, 5)
 
 give_reviewers_scores(listOfPersons)
 result = who_are_likely()
-print(result)
+for i in result:
+    print(i)
 
