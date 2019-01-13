@@ -9,6 +9,7 @@ class Person:
         self.summary = []
         self.review = []
         self.eigenvectorvalue = 0
+        self.score = 0
 
 
 class Testreview:
